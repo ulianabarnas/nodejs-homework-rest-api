@@ -7,10 +7,14 @@ const {
   postContact,
   deleteContact,
   putContact,
+  updateStatusContact,
 } = require("../../controllers/contactsController.js");
 const { tryCatchWrapper } = require("../../helpers");
 const { validateBody } = require("../../middlewares");
-const { contactSchema } = require("../../schemas/contactSchema.js");
+const {
+  contactSchema,
+  contactStatusSchema,
+} = require("../../schemas/contactSchema.js");
 
 router.get("/", tryCatchWrapper(getContacts));
 router.get("/:contactId", tryCatchWrapper(getContact));
@@ -20,6 +24,11 @@ router.put(
   "/:contactId",
   validateBody(contactSchema),
   tryCatchWrapper(putContact)
+);
+router.patch(
+  "/:contactId/favorite",
+  validateBody(contactStatusSchema),
+  tryCatchWrapper(updateStatusContact)
 );
 
 module.exports = router;
