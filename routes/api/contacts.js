@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router();
+const routerContacts = express.Router();
 
 const {
   getContacts,
@@ -16,19 +16,23 @@ const {
   contactStatusSchema,
 } = require("../../schemas/contactSchema.js");
 
-router.get("/", tryCatchWrapper(getContacts));
-router.get("/:contactId", tryCatchWrapper(getContact));
-router.post("/", validateBody(contactSchema), tryCatchWrapper(postContact));
-router.delete("/:contactId", tryCatchWrapper(deleteContact));
-router.put(
+routerContacts.get("/", tryCatchWrapper(getContacts));
+routerContacts.get("/:contactId", tryCatchWrapper(getContact));
+routerContacts.post(
+  "/",
+  validateBody(contactSchema),
+  tryCatchWrapper(postContact)
+);
+routerContacts.delete("/:contactId", tryCatchWrapper(deleteContact));
+routerContacts.put(
   "/:contactId",
   validateBody(contactSchema),
   tryCatchWrapper(putContact)
 );
-router.patch(
+routerContacts.patch(
   "/:contactId/favorite",
   validateBody(contactStatusSchema),
   tryCatchWrapper(updateStatusContact)
 );
 
-module.exports = router;
+module.exports = { routerContacts };
