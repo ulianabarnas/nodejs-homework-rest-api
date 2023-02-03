@@ -1,6 +1,9 @@
 const { HttpError } = require("../helpers");
 const { User } = require("../models/user");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const { JWT_SECRET } = process.env;
 
 const signup = async (req, res, next) => {
   const { email, password } = req.body;
@@ -49,8 +52,11 @@ const login = async (req, res, next) => {
     throw new HttpError(401, "Email or password is wrong");
   }
 
+  const payload = { id: storedUser._id };
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+
   res.json({
-    token: "<TOKEN>",
+    token,
     user: {
       email,
       subscription: storedUser.subscription,
@@ -58,7 +64,20 @@ const login = async (req, res, next) => {
   });
 };
 
+const currentUser = async (req, res, next) => {
+  const { email, subscription } = req.user;
+
+  return res.status(200).json({
+    email,
+    subscription,
+  });
+};
+
+const logout = async (req, res, next) => {};
+
 module.exports = {
   signup,
   login,
+  currentUser,
+  logout,
 };
