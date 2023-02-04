@@ -2,18 +2,32 @@ const express = require("express");
 const {
   signup,
   login,
-  currentUser,
+  getCurrentUser,
   logout,
+  changeSubscription,
 } = require("../../controllers/authController.js");
 const { tryCatchWrapper } = require("../../helpers/index.js");
 const { validateBody, auth } = require("../../middlewares/index.js");
-const { userSchema } = require("../../schemas/userSchema.js");
+const {
+  joiUserSchema,
+  joiSubscriptionSchema,
+} = require("../../schemas/userSchema.js");
 
 const routerAuth = express.Router();
 
-routerAuth.post("/signup", validateBody(userSchema), tryCatchWrapper(signup));
-routerAuth.post("/login", validateBody(userSchema), tryCatchWrapper(login));
-routerAuth.get("/current", tryCatchWrapper(auth), tryCatchWrapper(currentUser));
-routerAuth.get("/logout", tryCatchWrapper(auth), tryCatchWrapper(logout));
+routerAuth.post(
+  "/signup",
+  validateBody(joiUserSchema),
+  tryCatchWrapper(signup)
+);
+routerAuth.post("/login", validateBody(joiUserSchema), tryCatchWrapper(login));
+routerAuth.get("/current", auth, tryCatchWrapper(getCurrentUser));
+routerAuth.get("/logout", auth, tryCatchWrapper(logout));
+routerAuth.patch(
+  "/",
+  auth,
+  validateBody(joiSubscriptionSchema),
+  tryCatchWrapper(changeSubscription)
+);
 
 module.exports = { routerAuth };

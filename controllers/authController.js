@@ -34,7 +34,6 @@ const signup = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
-  // console.log(email, password);
 
   const storedUser = await User.findOne({
     email,
@@ -46,14 +45,13 @@ const login = async (req, res, next) => {
 
   const isPasswordValid = await bcrypt.compare(password, storedUser.password);
 
-  // console.log(isPasswordValid);
-
   if (!isPasswordValid) {
     throw new HttpError(401, "Email or password is wrong");
   }
 
   const payload = { id: storedUser._id };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+  await User.findByIdAndUpdate(storedUser._id, { token });
 
   res.json({
     token,
@@ -64,7 +62,7 @@ const login = async (req, res, next) => {
   });
 };
 
-const currentUser = async (req, res, next) => {
+const getCurrentUser = async (req, res, next) => {
   const { email, subscription } = req.user;
 
   return res.status(200).json({
@@ -73,11 +71,31 @@ const currentUser = async (req, res, next) => {
   });
 };
 
-const logout = async (req, res, next) => {};
+const logout = async (req, res, next) => {
+  const { _id } = req.user;
+  await User.findByIdAndUpdate(_id, { token: null });
+  return res.status(204).json();
+};
+
+const changeSubscription = async (req, res, next) => {
+  const { _id } = req.user;
+  const { subscription } = req.body;
+
+  const changedSubscription = await User.findByIdAndUpdate(
+    _id,
+    {
+      subscription,
+    },
+    { new: true }
+  );
+
+  return res.status(200).json(changedSubscription);
+};
 
 module.exports = {
   signup,
   login,
-  currentUser,
+  getCurrentUser,
   logout,
+  changeSubscription,
 };

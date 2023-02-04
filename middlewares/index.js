@@ -20,15 +20,19 @@ const auth = async (req, res, next) => {
   const authHeader = req.headers.authorization || "";
   const [type, token] = authHeader.split(" ");
 
-  if (type !== "Bearer" || !token) {
-    throw new HttpError(401, "Not authorized");
-  }
-
   try {
+    if (type !== "Bearer") {
+      throw new HttpError(401, "Not authorized");
+    }
     const { id } = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(id);
 
+    if (!user || !user.token) {
+      throw new HttpError(401, "Not authorized");
+    }
+
     req.user = user;
+    next();
   } catch (error) {
     if (
       error.name === "TokenExpiredError" ||
@@ -36,10 +40,8 @@ const auth = async (req, res, next) => {
     ) {
       throw new HttpError(401, "Not authorized");
     }
-    throw error;
+    next(error);
   }
-
-  next();
 };
 
 module.exports = {
