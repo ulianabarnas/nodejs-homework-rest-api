@@ -2,6 +2,9 @@ const { HttpError } = require("../helpers");
 const { User } = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const gravatar = require("gravatar");
+// const path = require("path");
+// const fs = require("fs/promises");
 
 const { JWT_SECRET } = process.env;
 
@@ -12,15 +15,18 @@ const signup = async (req, res, next) => {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   try {
+    const avatarURL = gravatar.url(email, { d: "robohash" });
     const savedUser = await User.create({
       email,
       password: hashedPassword,
+      avatarURL,
     });
 
     return res.status(201).json({
       user: {
         email,
         subscription: savedUser.subscription,
+        avatarURL,
       },
     });
   } catch (error) {
@@ -92,10 +98,25 @@ const changeSubscription = async (req, res, next) => {
   return res.status(200).json(changedSubscription);
 };
 
+const updateAvatar = async (req, res, next) => {
+  console.log(req);
+  console.log("req.file", req.file);
+  // try {
+
+  // } catch (error) {
+  //   throw error;
+  // }
+
+  return res.json({
+    ok: true,
+  });
+};
+
 module.exports = {
   signup,
   login,
   getCurrentUser,
   logout,
   changeSubscription,
+  updateAvatar,
 };

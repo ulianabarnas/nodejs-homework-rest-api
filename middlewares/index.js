@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
 const { User } = require("./../models/user");
 const { HttpError } = require("../helpers");
 
@@ -38,13 +40,30 @@ const auth = async (req, res, next) => {
       error.name === "TokenExpiredError" ||
       error.name === "JsonWebTokenError"
     ) {
-      throw new HttpError(401, "Not authorized");
+      next(new HttpError(401, "Not authorized"));
     }
     next(error);
   }
 };
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.resolve(__dirname, "../tmp"));
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+  limits: {
+    fileSize: 2048,
+  },
+});
+
+const upload = multer({
+  storage,
+});
+
 module.exports = {
   validateBody,
   auth,
+  upload,
 };
