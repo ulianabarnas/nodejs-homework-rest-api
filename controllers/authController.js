@@ -3,8 +3,8 @@ const { User } = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
-// const path = require("path");
-// const fs = require("fs/promises");
+const path = require("path");
+const fs = require("fs/promises");
 
 const { JWT_SECRET } = process.env;
 
@@ -99,17 +99,20 @@ const changeSubscription = async (req, res, next) => {
 };
 
 const updateAvatar = async (req, res, next) => {
-  console.log(req);
-  console.log("req.file", req.file);
-  // try {
-
-  // } catch (error) {
-  //   throw error;
-  // }
-
-  return res.json({
-    ok: true,
-  });
+  const { path: tmpPath, originalname } = req.file;
+  const { _id: id } = req.user;
+  const avatarName = `${id}_${originalname}`;
+  const avatarsDir = path.join(__dirname, "../public/avatars");
+  try {
+    const publicPath = path.join(avatarsDir, avatarName);
+    await fs.rename(tmpPath, publicPath);
+    const avatarURL = path.join("public", "avatars", avatarName);
+    await User.findByIdAndUpdate(id, { avatarURL });
+    res.json({ avatarURL });
+  } catch (error) {
+    await fs.unlink(tmpPath);
+    throw error;
+  }
 };
 
 module.exports = {

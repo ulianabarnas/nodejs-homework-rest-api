@@ -8,7 +8,12 @@ const {
   updateAvatar,
 } = require("../../controllers/authController.js");
 const { tryCatchWrapper } = require("../../helpers/index.js");
-const { validateBody, auth, upload } = require("../../middlewares/index.js");
+const {
+  validateBody,
+  auth,
+  upload,
+  resizeAvatar,
+} = require("../../middlewares/index.js");
 const {
   joiUserSchema,
   joiSubscriptionSchema,
@@ -34,6 +39,7 @@ routerAuth.patch(
   "/avatars",
   auth,
   upload.single("avatar"),
+  tryCatchWrapper(resizeAvatar),
   tryCatchWrapper(updateAvatar)
 );
 
