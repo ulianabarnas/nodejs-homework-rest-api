@@ -15,7 +15,7 @@ const signup = async (req, res, next) => {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   try {
-    const avatarURL = gravatar.url(email, { d: "robohash" });
+    const avatarURL = gravatar.url(email, { protocol: "https", d: "robohash" });
     const savedUser = await User.create({
       email,
       password: hashedPassword,
