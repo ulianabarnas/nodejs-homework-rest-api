@@ -2,6 +2,9 @@ const { HttpError } = require("../helpers");
 const { User } = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs/promises");
 
 const { JWT_SECRET } = process.env;
 
@@ -12,15 +15,18 @@ const signup = async (req, res, next) => {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   try {
+    const avatarURL = gravatar.url(email, { protocol: "https", d: "robohash" });
     const savedUser = await User.create({
       email,
       password: hashedPassword,
+      avatarURL,
     });
 
     return res.status(201).json({
       user: {
         email,
         subscription: savedUser.subscription,
+        avatarURL,
       },
     });
   } catch (error) {
@@ -92,10 +98,28 @@ const changeSubscription = async (req, res, next) => {
   return res.status(200).json(changedSubscription);
 };
 
+const updateAvatar = async (req, res, next) => {
+  const { path: tmpPath, originalname } = req.file;
+  const { _id: id } = req.user;
+  const avatarName = `${id}_${originalname}`;
+  const avatarsDir = path.join(__dirname, "../public/avatars");
+  try {
+    const publicPath = path.join(avatarsDir, avatarName);
+    await fs.rename(tmpPath, publicPath);
+    const avatarURL = path.join("public", "avatars", avatarName);
+    await User.findByIdAndUpdate(id, { avatarURL });
+    res.json({ avatarURL });
+  } catch (error) {
+    await fs.unlink(tmpPath);
+    throw error;
+  }
+};
+
 module.exports = {
   signup,
   login,
   getCurrentUser,
   logout,
   changeSubscription,
+  updateAvatar,
 };
