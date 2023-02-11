@@ -13,7 +13,7 @@ const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
-app.use("/public", express.static("public"));
+app.use(express.static("public"));
 
 // routes
 app.use("/api/contacts", routerContacts);
@@ -37,6 +37,12 @@ app.use((err, req, res, next) => {
   if (err.kind === "ObjectId") {
     return res.status(404).json({
       message: "Not found",
+    });
+  }
+
+  if (err.code === 403) {
+    return res.status(403).json({
+      message: err.message,
     });
   }
 
