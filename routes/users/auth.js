@@ -6,6 +6,7 @@ const {
   logout,
   changeSubscription,
   updateAvatar,
+  verifyEmail,
 } = require("../../controllers/authController.js");
 const { tryCatchWrapper } = require("../../helpers/index.js");
 const {
@@ -42,5 +43,6 @@ routerAuth.patch(
   tryCatchWrapper(resizeAvatar),
   tryCatchWrapper(updateAvatar)
 );
+routerAuth.get("/verify/:verificationToken", tryCatchWrapper(verifyEmail));
 
 module.exports = { routerAuth };

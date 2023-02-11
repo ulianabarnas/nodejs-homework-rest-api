@@ -1,19 +1,5 @@
-function tryCatchWrapper(endpointFn) {
-  return async (req, res, next) => {
-    try {
-      await endpointFn(req, res, next);
-    } catch (error) {
-      return next(error);
-    }
-  };
-}
+const tryCatchWrapper = require("./tryCatchWrapper");
+const HttpError = require("./HttpError");
+const sendEmail = require("./sendEmal");
 
-class HttpError extends Error {
-  constructor(status, message) {
-    super(message);
-    this.message = message;
-    this.status = status;
-  }
-}
-
-module.exports = { tryCatchWrapper, HttpError };
+module.exports = { tryCatchWrapper, HttpError, sendEmail };
